@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pizza Builder — Builder Design Pattern</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 1.6rem; color: #f8fafc; text-align: center; }
+    .subtitle { color: #94a3b8; font-size: 0.9rem; text-align: center; margin-bottom: 2rem; }
+
+    /* ── Director Presets ── */
+    .director-section {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+    }
+
+    .director-btns {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .director-btn {
+      flex: 1;
+      min-width: 200px;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      border: 2px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .director-btn:hover { border-color: #3b82f6; background: #1e293b; }
+    .director-btn:active { background: #334155; }
+
+    .director-btn .icon { font-size: 1.6rem; }
+    .director-btn .label small { display: block; color: #64748b; font-weight: 400; font-size: 0.8rem; margin-top: 2px; }
+
+    /* ── Builder Panel ── */
+    .builder-section {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .builder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .field-group label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+    }
+
+    .field-group select {
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .field-group select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+    }
+
+    /* Toppings */
+    .toppings-label { margin-bottom: 0.5rem; }
+
+    .toppings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .topping-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      font-size: 0.9rem;
+    }
+
+    .topping-item:hover { border-color: #475569; }
+    .topping-item.selected { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
+
+    .topping-item input[type="checkbox"] {
+      accent-color: #3b82f6;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .build-btn {
+      padding: 0.65rem 2rem;
+      border-radius: 8px;
+      border: none;
+      background: #16a34a;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .build-btn:hover { background: #15803d; }
+    .build-btn:active { background: #166534; }
+
+    /* ── Pizza Display ── */
+    .output-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .output-section { grid-template-columns: 1fr; }
+    }
+
+    .pizza-visual {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+    }
+
+    .pizza-circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: #92400e;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 10px #78350f, 0 0 0 14px #451a03;
+      margin-bottom: 1rem;
+    }
+
+    .pizza-inner {
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: #dc2626;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pizza-inner.marinara { background: #dc2626; }
+    .pizza-inner.bbq { background: #92400e; }
+    .pizza-inner.alfredo { background: #d6d3d1; }
+    .pizza-inner.pesto { background: #166534; }
+
+    .cheese-layer {
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: #fbbf24;
+      opacity: 0.7;
+    }
+
+    .cheese-layer.mozzarella { background: #fef3c7; opacity: 0.75; }
+    .cheese-layer.cheddar { background: #f59e0b; opacity: 0.7; }
+    .cheese-layer.parmesan { background: #fef9c3; opacity: 0.6; }
+    .cheese-layer.vegan { background: #a3e635; opacity: 0.5; }
+
+    .topping-dot {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .pizza-label {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .no-pizza {
+      color: #475569;
+      font-size: 0.95rem;
+    }
+
+    /* ── Orders List ── */
+    .orders-panel {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-height: 340px;
+      overflow-y: auto;
+    }
+
+    .order-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .order-card:last-child { margin-bottom: 0; }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+
+    .order-type {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #f8fafc;
+    }
+
+    .order-price {
+      font-weight: 700;
+      color: #4ade80;
+      font-size: 0.95rem;
+    }
+
+    .order-detail {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .order-badge {
+      display: inline-block;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-right: 0.3rem;
+    }
+
+    .badge-director { background: #1e3a5f; color: #93c5fd; }
+    .badge-custom { background: #365314; color: #bef264; }
+
+    .empty-orders { color: #475569; font-size: 0.9rem; text-align: center; padding: 2rem 0; }
+
+    /* ── Build Log ── */
+    .log-section {
+      width: 100%;
+      margin-top: 0;
+    }
+
+    .log-panel {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .log {
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+
+    .log-entry { color: #94a3b8; }
+    .log-entry .time { color: #64748b; }
+    .log-entry .cls { color: #c084fc; }
+    .log-entry .method { color: #38bdf8; }
+    .log-entry .arg { color: #4ade80; }
+    .log-entry .info { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Pizza Builder</h1>
+    <p class="subtitle">Builder Design Pattern Demo</p>
+
+    <!-- Director Presets -->
+    <div class="director-section">
+      <div class="section-title">Pizza Director — Quick Presets</div>
+      <div class="director-btns">
+        <button class="director-btn" id="directorVeggie">
+          <span class="icon">🥦</span>
+          <span class="label">Veggie Pizza<small>Whole wheat, marinara, fresh veggies</small></span>
+        </button>
+        <button class="director-btn" id="directorMeat">
+          <span class="icon">🥩</span>
+          <span class="label">Meat Lovers Pizza<small>Hand-tossed, BBQ, five meats</small></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Custom Builder -->
+    <div class="builder-section">
+      <div class="section-title">Pizza Builder — Custom Build</div>
+
+      <div class="builder-grid">
+        <div class="field-group">
+          <label for="pizzaType">Pizza Type</label>
+          <select id="pizzaType">
+            <option value="veggie">Veggie Pizza</option>
+            <option value="meat-lovers">Meat Lovers Pizza</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="pizzaSize">Size</label>
+          <select id="pizzaSize">
+            <option value="Small">Small ($8)</option>
+            <option value="Medium" selected>Medium ($10)</option>
+            <option value="Large">Large ($12)</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="pizzaDough">Dough</label>
+          <select id="pizzaDough">
+            <option value="Classic Hand-Tossed">Classic Hand-Tossed</option>
+            <option value="Thin Crust">Thin Crust</option>
+            <option value="Whole Wheat">Whole Wheat</option>
+            <option value="Stuffed Crust">Stuffed Crust</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="pizzaSauce">Sauce</label>
+          <select id="pizzaSauce">
+            <option value="Marinara">Marinara</option>
+            <option value="BBQ">BBQ</option>
+            <option value="Alfredo">Alfredo</option>
+            <option value="Pesto">Pesto</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="pizzaCheese">Cheese</label>
+          <select id="pizzaCheese">
+            <option value="Mozzarella">Mozzarella</option>
+            <option value="Cheddar Blend">Cheddar Blend</option>
+            <option value="Parmesan">Parmesan</option>
+            <option value="Vegan Cheese">Vegan Cheese</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="section-title toppings-label">Toppings (+$1.50 each)</label>
+      <div class="toppings-grid" id="toppingsGrid"></div>
+
+      <button class="build-btn" id="buildBtn">Build Pizza</button>
+    </div>
+
+    <!-- Output: Visual + Orders -->
+    <div class="output-section">
+      <div class="pizza-visual" id="pizzaVisual">
+        <p class="no-pizza">Build a pizza to see it here!</p>
+      </div>
+      <div class="orders-panel">
+        <div class="section-title">Orders</div>
+        <div id="ordersList"><p class="empty-orders">No pizzas built yet.</p></div>
+      </div>
+    </div>
+
+    <!-- Build Log -->
+    <div class="log-section">
+      <div class="log-panel">
+        <div class="section-title">Build Log</div>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════
+    //  Builder Design Pattern — Pizza Builder Implementation
+    // ═══════════════════════════════════════════════════════
+
+    // ── Abstract Pizza (Product) ──
+
+    class Pizza {
+      constructor() {
+        if (new.target === Pizza) {
+          throw new Error("Cannot instantiate abstract class Pizza directly");
+        }
+        this.size = "";
+        this.dough = "";
+        this.sauce = "";
+        this.cheese = "";
+        this.toppings = [];
+      }
+
+      getType() {
+        throw new Error("getType() must be implemented by subclass");
+      }
+
+      describe() {
+        return [
+          `${this.getType()} (${this.size})`,
+          `  Dough:    ${this.dough}`,
+          `  Sauce:    ${this.sauce}`,
+          `  Cheese:   ${this.cheese}`,
+          `  Toppings: ${this.toppings.length ? this.toppings.join(", ") : "none"}`,
+        ].join("\n");
+      }
+
+      getPrice() {
+        const sizePrice = { Small: 8, Medium: 10, Large: 12 };
+        const base = sizePrice[this.size] ?? 10;
+        return base + this.toppings.length * 1.5;
+      }
+    }
+
+    // ── Concrete Pizza Classes ──
+
+    class VeggiePizza extends Pizza {
+      getType() { return "Veggie Pizza"; }
+    }
+
+    class MeatLoversPizza extends Pizza {
+      getType() { return "Meat Lovers Pizza"; }
+    }
+
+    // ── PizzaBuilder ──
+
+    class PizzaBuilder {
+      constructor(type) {
+        this.pizza = type === "veggie" ? new VeggiePizza() : new MeatLoversPizza();
+        this._type = type;
+      }
+
+      setSize(size) {
+        this.pizza.size = size;
+        logBuild("PizzaBuilder", "setSize", size);
+        return this;
+      }
+
+      setDough(dough) {
+        this.pizza.dough = dough;
+        logBuild("PizzaBuilder", "setDough", dough);
+        return this;
+      }
+
+      setSauce(sauce) {
+        this.pizza.sauce = sauce;
+        logBuild("PizzaBuilder", "setSauce", sauce);
+        return this;
+      }
+
+      setCheese(cheese) {
+        this.pizza.cheese = cheese;
+        logBuild("PizzaBuilder", "setCheese", cheese);
+        return this;
+      }
+
+      addTopping(topping) {
+        this.pizza.toppings.push(topping);
+        logBuild("PizzaBuilder", "addTopping", topping);
+        return this;
+      }
+
+      build() {
+        logBuild("PizzaBuilder", "build", `${this.pizza.getType()} — $${this.pizza.getPrice().toFixed(2)}`);
+        return this.pizza;
+      }
+    }
+
+    // ── PizzaDirector ──
+
+    class PizzaDirector {
+      constructor(builder) {
+        this.builder = builder;
+      }
+
+      setBuilder(builder) {
+        this.builder = builder;
+      }
+
+      buildVeggiePizza() {
+        logInfo("PizzaDirector", "buildVeggiePizza", "Starting predefined recipe…");
+        return this.builder
+          .setSize("Large")
+          .setDough("Whole Wheat")
+          .setSauce("Marinara")
+          .setCheese("Mozzarella")
+          .addTopping("Bell Peppers")
+          .addTopping("Mushrooms")
+          .addTopping("Black Olives")
+          .addTopping("Red Onions")
+          .addTopping("Spinach")
+          .build();
+      }
+
+      buildMeatLoversPizza() {
+        logInfo("PizzaDirector", "buildMeatLoversPizza", "Starting predefined recipe…");
+        return this.builder
+          .setSize("Large")
+          .setDough("Classic Hand-Tossed")
+          .setSauce("BBQ")
+          .setCheese("Cheddar Blend")
+          .addTopping("Pepperoni")
+          .addTopping("Italian Sausage")
+          .addTopping("Bacon")
+          .addTopping("Ham")
+          .addTopping("Ground Beef")
+          .build();
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    //  UI Wiring
+    // ═══════════════════════════════════════════════
+
+    const VEGGIE_TOPPINGS = [
+      "Bell Peppers", "Mushrooms", "Black Olives", "Red Onions",
+      "Spinach", "Tomatoes", "Artichoke Hearts", "Jalapeños",
+      "Pineapple", "Broccoli",
+    ];
+
+    const MEAT_TOPPINGS = [
+      "Pepperoni", "Italian Sausage", "Bacon", "Ham",
+      "Ground Beef", "Grilled Chicken", "Anchovies", "Salami",
+      "Chorizo", "Prosciutto",
+    ];
+
+    const TOPPING_EMOJIS = {
+      "Bell Peppers": "🫑", "Mushrooms": "🍄", "Black Olives": "🫒",
+      "Red Onions": "🧅", "Spinach": "🥬", "Tomatoes": "🍅",
+      "Artichoke Hearts": "🌿", "Jalapeños": "🌶️", "Pineapple": "🍍",
+      "Broccoli": "🥦", "Pepperoni": "🔴", "Italian Sausage": "🌭",
+      "Bacon": "🥓", "Ham": "🍖", "Ground Beef": "🥩",
+      "Grilled Chicken": "🍗", "Anchovies": "🐟", "Salami": "🍕",
+      "Chorizo": "🫕", "Prosciutto": "🥩",
+    };
+
+    const orders = [];
+    const logEl = document.getElementById("log");
+    const toppingsGrid = document.getElementById("toppingsGrid");
+    const typeSelect = document.getElementById("pizzaType");
+
+    // ── Build Log helpers ──
+
+    function logBuild(cls, method, arg) {
+      const now = new Date().toLocaleTimeString();
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      entry.innerHTML = `<span class="time">[${now}]</span> <span class="cls">${cls}</span>.<span class="method">${method}</span>(<span class="arg">"${arg}"</span>)`;
+      logEl.prepend(entry);
+    }
+
+    function logInfo(cls, method, msg) {
+      const now = new Date().toLocaleTimeString();
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      entry.innerHTML = `<span class="time">[${now}]</span> <span class="cls">${cls}</span>.<span class="method">${method}</span>() — <span class="info">${msg}</span>`;
+      logEl.prepend(entry);
+    }
+
+    // ── Toppings rendering ──
+
+    function renderToppings() {
+      const type = typeSelect.value;
+      const list = type === "veggie" ? VEGGIE_TOPPINGS : MEAT_TOPPINGS;
+      toppingsGrid.innerHTML = "";
+      list.forEach(name => {
+        const item = document.createElement("label");
+        item.className = "topping-item";
+        item.innerHTML = `<input type="checkbox" value="${name}" />${TOPPING_EMOJIS[name] || "•"} ${name}`;
+        const cb = item.querySelector("input");
+        cb.addEventListener("change", () => {
+          item.classList.toggle("selected", cb.checked);
+        });
+        toppingsGrid.appendChild(item);
+      });
+    }
+
+    typeSelect.addEventListener("change", renderToppings);
+    renderToppings();
+
+    // ── Pizza visual rendering ──
+
+    function sauceClass(sauce) {
+      const map = { Marinara: "marinara", BBQ: "bbq", Alfredo: "alfredo", Pesto: "pesto" };
+      return map[sauce] || "marinara";
+    }
+
+    function cheeseClass(cheese) {
+      if (cheese.includes("Mozzarella")) return "mozzarella";
+      if (cheese.includes("Cheddar")) return "cheddar";
+      if (cheese.includes("Parmesan")) return "parmesan";
+      if (cheese.includes("Vegan")) return "vegan";
+      return "mozzarella";
+    }
+
+    // Distribute topping dots evenly around the pizza
+    function toppingPositions(count) {
+      const positions = [];
+      const cx = 85, cy = 85, r = 50;
+      for (let i = 0; i < count; i++) {
+        const angle = (2 * Math.PI * i) / count - Math.PI / 2;
+        const jitterR = r * (0.4 + Math.random() * 0.55);
+        const x = cx + jitterR * Math.cos(angle);
+        const y = cy + jitterR * Math.sin(angle);
+        positions.push({ x, y });
+      }
+      return positions;
+    }
+
+    function renderPizzaVisual(pizza) {
+      const visual = document.getElementById("pizzaVisual");
+      const positions = toppingPositions(pizza.toppings.length);
+
+      let toppingDotsHTML = "";
+      pizza.toppings.forEach((t, i) => {
+        const pos = positions[i];
+        const emoji = TOPPING_EMOJIS[t] || "•";
+        toppingDotsHTML += `<span class="topping-dot" style="left:${pos.x}px;top:${pos.y}px">${emoji}</span>`;
+      });
+
+      visual.innerHTML = `
+        <div class="pizza-circle">
+          <div class="pizza-inner ${sauceClass(pizza.sauce)}">
+            <div class="cheese-layer ${cheeseClass(pizza.cheese)}"></div>
+            ${toppingDotsHTML}
+          </div>
+        </div>
+        <span class="pizza-label">${pizza.getType()} — ${pizza.size}</span>
+      `;
+    }
+
+    // ── Orders rendering ──
+
+    function renderOrders() {
+      const list = document.getElementById("ordersList");
+      if (orders.length === 0) {
+        list.innerHTML = '<p class="empty-orders">No pizzas built yet.</p>';
+        return;
+      }
+      list.innerHTML = orders.map((o, i) => `
+        <div class="order-card">
+          <div class="order-header">
+            <span class="order-type">#${i + 1} ${o.pizza.getType()} (${o.pizza.size})</span>
+            <span class="order-price">$${o.pizza.getPrice().toFixed(2)}</span>
+          </div>
+          <div class="order-detail">
+            <span class="order-badge ${o.via === "Director" ? "badge-director" : "badge-custom"}">${o.via}</span>
+            ${o.pizza.dough} / ${o.pizza.sauce} / ${o.pizza.cheese}<br/>
+            Toppings: ${o.pizza.toppings.length ? o.pizza.toppings.join(", ") : "none"}
+          </div>
+        </div>
+      `).reverse().join("");
+    }
+
+    // ── Director buttons ──
+
+    document.getElementById("directorVeggie").addEventListener("click", () => {
+      const builder = new PizzaBuilder("veggie");
+      const director = new PizzaDirector(builder);
+      const pizza = director.buildVeggiePizza();
+      orders.push({ pizza, via: "Director" });
+      renderPizzaVisual(pizza);
+      renderOrders();
+    });
+
+    document.getElementById("directorMeat").addEventListener("click", () => {
+      const builder = new PizzaBuilder("meat-lovers");
+      const director = new PizzaDirector(builder);
+      const pizza = director.buildMeatLoversPizza();
+      orders.push({ pizza, via: "Director" });
+      renderPizzaVisual(pizza);
+      renderOrders();
+    });
+
+    // ── Custom Build button ──
+
+    document.getElementById("buildBtn").addEventListener("click", () => {
+      const type = document.getElementById("pizzaType").value;
+      const size = document.getElementById("pizzaSize").value;
+      const dough = document.getElementById("pizzaDough").value;
+      const sauce = document.getElementById("pizzaSauce").value;
+      const cheese = document.getElementById("pizzaCheese").value;
+
+      const selectedToppings = Array.from(
+        toppingsGrid.querySelectorAll("input[type=checkbox]:checked")
+      ).map(cb => cb.value);
+
+      logInfo("App", "customBuild", "Building custom pizza with PizzaBuilder…");
+
+      const builder = new PizzaBuilder(type);
+      builder.setSize(size).setDough(dough).setSauce(sauce).setCheese(cheese);
+      selectedToppings.forEach(t => builder.addTopping(t));
+      const pizza = builder.build();
+
+      orders.push({ pizza, via: "Custom" });
+      renderPizzaVisual(pizza);
+      renderOrders();
+    });
+
+    // ── Init log ──
+    logInfo("App", "init", "Pizza Builder ready — use the Director for presets or the Builder for custom pizzas");
+  </script>
+</body>
+</html>
