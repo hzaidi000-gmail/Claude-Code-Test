@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Observer Pattern — Weather Station</title>
+  <title>Design Patterns Demo</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: #0f172a;
@@ -15,441 +14,56 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       padding: 2rem 1rem;
     }
-
-    h1 {
-      font-size: 1.6rem;
-      margin-bottom: 0.25rem;
-      color: #f8fafc;
-    }
-
-    .subtitle {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
-    }
-
-    /* ── Controls ── */
-    .controls {
+    h1 { font-size: 1.8rem; color: #f8fafc; margin-bottom: 0.25rem; }
+    .subtitle { color: #94a3b8; font-size: 0.95rem; margin-bottom: 2.5rem; }
+    .cards { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    .card {
       background: #1e293b;
       border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 1.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: flex-end;
-      width: 100%;
-      max-width: 720px;
-      margin-bottom: 2rem;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-      flex: 1;
-      min-width: 130px;
-    }
-
-    .input-group label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-    }
-
-    .input-group input {
-      padding: 0.5rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #0f172a;
+      border-radius: 14px;
+      padding: 2rem 1.75rem;
+      width: 280px;
+      text-decoration: none;
       color: #e2e8f0;
-      font-size: 1rem;
-      width: 100%;
+      transition: border-color 0.2s, transform 0.15s;
     }
-
-    .input-group input:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
-    }
-
-    button.update-btn {
-      padding: 0.55rem 1.5rem;
-      border-radius: 8px;
-      border: none;
-      background: #3b82f6;
-      color: #fff;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
-      white-space: nowrap;
-    }
-
-    button.update-btn:hover { background: #2563eb; }
-    button.update-btn:active { background: #1d4ed8; }
-
-    /* ── Display Grid ── */
-    .displays {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.25rem;
-      width: 100%;
-      max-width: 720px;
-    }
-
-    .display-card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 1.25rem;
-      transition: opacity 0.3s, border-color 0.3s;
-    }
-
-    .display-card.unsubscribed {
-      opacity: 0.4;
-      border-color: #1e293b;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    .card-title {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-    }
-
-    /* Toggle switch */
-    .toggle {
-      position: relative;
-      width: 40px;
-      height: 22px;
-    }
-
-    .toggle input { opacity: 0; width: 0; height: 0; }
-
-    .toggle .slider {
-      position: absolute;
-      inset: 0;
-      background: #475569;
-      border-radius: 22px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .toggle .slider::before {
-      content: "";
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      left: 3px;
-      top: 3px;
-      background: #fff;
-      border-radius: 50%;
-      transition: transform 0.2s;
-    }
-
-    .toggle input:checked + .slider { background: #3b82f6; }
-    .toggle input:checked + .slider::before { transform: translateX(18px); }
-
-    .card-value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #f8fafc;
-      line-height: 1.2;
-    }
-
-    .card-detail {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      margin-top: 0.5rem;
-    }
-
-    .card-icon {
-      font-size: 1.4rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .badge {
+    .card:hover { border-color: #3b82f6; transform: translateY(-3px); }
+    .card-icon { font-size: 2.4rem; margin-bottom: 1rem; }
+    .card-title { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.4rem; }
+    .card-pattern {
       display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 5px;
+      font-size: 0.72rem;
       font-weight: 600;
-      margin-top: 0.5rem;
-    }
-
-    .badge.improving { background: #166534; color: #bbf7d0; }
-    .badge.worsening { background: #7f1d1d; color: #fecaca; }
-    .badge.same { background: #1e3a5f; color: #bfdbfe; }
-    .badge.waiting { background: #44403c; color: #d6d3d1; }
-
-    /* ── Event Log ── */
-    .log-section {
-      width: 100%;
-      max-width: 720px;
-      margin-top: 2rem;
-    }
-
-    .log-title {
-      font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-      margin-bottom: 0.5rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.75rem;
     }
-
-    .log {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 1rem;
-      max-height: 180px;
-      overflow-y: auto;
-      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
-      font-size: 0.8rem;
-      line-height: 1.6;
-    }
-
-    .log-entry { color: #94a3b8; }
-    .log-entry .time { color: #64748b; }
-    .log-entry .action { color: #38bdf8; }
-    .log-entry .target { color: #a78bfa; }
+    .pattern-observer { background: #1e3a5f; color: #93c5fd; }
+    .pattern-builder { background: #365314; color: #bef264; }
+    .card-desc { font-size: 0.88rem; color: #94a3b8; line-height: 1.5; }
   </style>
 </head>
 <body>
-  <h1>Weather Station</h1>
-  <p class="subtitle">Observer Design Pattern Demo</p>
-
-  <!-- Controls -->
-  <div class="controls">
-    <div class="input-group">
-      <label for="temp">Temperature (°C)</label>
-      <input type="number" id="temp" value="26.5" step="0.1" />
-    </div>
-    <div class="input-group">
-      <label for="humidity">Humidity (%)</label>
-      <input type="number" id="humidity" value="65" step="1" />
-    </div>
-    <div class="input-group">
-      <label for="pressure">Pressure (hPa)</label>
-      <input type="number" id="pressure" value="1013.1" step="0.1" />
-    </div>
-    <button class="update-btn" id="updateBtn">Update</button>
+  <h1>Design Patterns Demo</h1>
+  <p class="subtitle">Interactive demos of classic software design patterns</p>
+  <div class="cards">
+    <a class="card" href="weather-station.html">
+      <div class="card-icon">🌦️</div>
+      <div class="card-title">Weather Station</div>
+      <span class="card-pattern pattern-observer">Observer Pattern</span>
+      <p class="card-desc">A weather station notifies multiple display observers whenever measurements change.</p>
+    </a>
+    <a class="card" href="pizza-builder.html">
+      <div class="card-icon">🍕</div>
+      <div class="card-title">Pizza Builder</div>
+      <span class="card-pattern pattern-builder">Builder Pattern</span>
+      <p class="card-desc">Construct custom pizzas step-by-step or use the Director for predefined recipes.</p>
+    </a>
   </div>
-
-  <!-- Observer Display Cards -->
-  <div class="displays">
-    <div class="display-card" id="currentCard">
-      <div class="card-header">
-        <span class="card-title">Current Conditions</span>
-        <label class="toggle">
-          <input type="checkbox" checked id="toggleCurrent" />
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="card-icon">🌡️</div>
-      <div class="card-value" id="currentTemp">--</div>
-      <div class="card-detail" id="currentHumidity">Humidity: --</div>
-    </div>
-
-    <div class="display-card" id="statsCard">
-      <div class="card-header">
-        <span class="card-title">Statistics</span>
-        <label class="toggle">
-          <input type="checkbox" checked id="toggleStats" />
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="card-icon">📊</div>
-      <div class="card-value" id="statsAvg">--</div>
-      <div class="card-detail" id="statsMinMax">Min/Max: --</div>
-    </div>
-
-    <div class="display-card" id="forecastCard">
-      <div class="card-header">
-        <span class="card-title">Forecast</span>
-        <label class="toggle">
-          <input type="checkbox" checked id="toggleForecast" />
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="card-icon">🔮</div>
-      <div class="card-value" id="forecastText">--</div>
-      <div id="forecastBadgeContainer"></div>
-    </div>
-  </div>
-
-  <!-- Event Log -->
-  <div class="log-section">
-    <div class="log-title">Event Log</div>
-    <div class="log" id="log"></div>
-  </div>
-
-  <script>
-    // ─── Observer Pattern Implementation ───
-
-    class WeatherStation {
-      constructor() {
-        this.observers = new Set();
-        this.data = { temperature: 0, humidity: 0, pressure: 0 };
-      }
-
-      subscribe(observer) {
-        this.observers.add(observer);
-      }
-
-      unsubscribe(observer) {
-        this.observers.delete(observer);
-      }
-
-      notify() {
-        for (const observer of this.observers) {
-          observer.update({ ...this.data });
-        }
-      }
-
-      setMeasurements(temperature, humidity, pressure) {
-        this.data = { temperature, humidity, pressure };
-        this.notify();
-      }
-    }
-
-    class CurrentConditionsDisplay {
-      constructor() { this.data = null; }
-
-      update(data) {
-        this.data = data;
-        this.render();
-      }
-
-      render() {
-        if (!this.data) return;
-        document.getElementById("currentTemp").textContent = `${this.data.temperature}°C`;
-        document.getElementById("currentHumidity").textContent = `Humidity: ${this.data.humidity}%`;
-      }
-    }
-
-    class StatisticsDisplay {
-      constructor() { this.temperatures = []; }
-
-      update(data) {
-        this.temperatures.push(data.temperature);
-        this.render();
-      }
-
-      render() {
-        if (this.temperatures.length === 0) return;
-        const min = Math.min(...this.temperatures);
-        const max = Math.max(...this.temperatures);
-        const avg = this.temperatures.reduce((s, t) => s + t, 0) / this.temperatures.length;
-        document.getElementById("statsAvg").textContent = `${avg.toFixed(1)}°C avg`;
-        document.getElementById("statsMinMax").textContent = `Min: ${min}°C / Max: ${max}°C`;
-      }
-    }
-
-    class ForecastDisplay {
-      constructor() { this.previousPressure = null; this.currentPressure = null; }
-
-      update(data) {
-        this.previousPressure = this.currentPressure;
-        this.currentPressure = data.pressure;
-        this.render();
-      }
-
-      render() {
-        const el = document.getElementById("forecastText");
-        const badgeEl = document.getElementById("forecastBadgeContainer");
-
-        if (this.currentPressure === null) return;
-
-        if (this.previousPressure === null) {
-          el.textContent = "Awaiting data…";
-          badgeEl.innerHTML = '<span class="badge waiting">Waiting</span>';
-          return;
-        }
-
-        if (this.currentPressure > this.previousPressure) {
-          el.textContent = "Improving!";
-          badgeEl.innerHTML = '<span class="badge improving">Pressure Rising</span>';
-        } else if (this.currentPressure < this.previousPressure) {
-          el.textContent = "Rainy weather";
-          badgeEl.innerHTML = '<span class="badge worsening">Pressure Dropping</span>';
-        } else {
-          el.textContent = "More of same";
-          badgeEl.innerHTML = '<span class="badge same">Steady</span>';
-        }
-      }
-    }
-
-    // ─── Setup ───
-
-    const station = new WeatherStation();
-
-    const currentDisplay = new CurrentConditionsDisplay();
-    const statsDisplay = new StatisticsDisplay();
-    const forecastDisplay = new ForecastDisplay();
-
-    station.subscribe(currentDisplay);
-    station.subscribe(statsDisplay);
-    station.subscribe(forecastDisplay);
-
-    const logEl = document.getElementById("log");
-
-    function logEvent(action, target) {
-      const now = new Date().toLocaleTimeString();
-      const entry = document.createElement("div");
-      entry.className = "log-entry";
-      entry.innerHTML = `<span class="time">[${now}]</span> <span class="action">${action}</span> <span class="target">${target}</span>`;
-      logEl.prepend(entry);
-    }
-
-    // ─── Update Button ───
-
-    document.getElementById("updateBtn").addEventListener("click", () => {
-      const t = parseFloat(document.getElementById("temp").value);
-      const h = parseFloat(document.getElementById("humidity").value);
-      const p = parseFloat(document.getElementById("pressure").value);
-
-      if (isNaN(t) || isNaN(h) || isNaN(p)) return;
-
-      station.setMeasurements(t, h, p);
-      logEvent("notify()", `${t}°C, ${h}%, ${p} hPa → ${station.observers.size} observer(s)`);
-    });
-
-    // ─── Toggle Subscriptions ───
-
-    function wireToggle(checkboxId, cardId, display, name) {
-      const checkbox = document.getElementById(checkboxId);
-      const card = document.getElementById(cardId);
-
-      checkbox.addEventListener("change", () => {
-        if (checkbox.checked) {
-          station.subscribe(display);
-          card.classList.remove("unsubscribed");
-          logEvent("subscribe()", name);
-        } else {
-          station.unsubscribe(display);
-          card.classList.add("unsubscribed");
-          logEvent("unsubscribe()", name);
-        }
-      });
-    }
-
-    wireToggle("toggleCurrent", "currentCard", currentDisplay, "CurrentConditionsDisplay");
-    wireToggle("toggleStats", "statsCard", statsDisplay, "StatisticsDisplay");
-    wireToggle("toggleForecast", "forecastCard", forecastDisplay, "ForecastDisplay");
-
-    logEvent("ready", "Weather Station initialized with 3 observers");
-  </script>
 </body>
 </html>
