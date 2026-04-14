@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coffee Shop — Decorator Design Pattern</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #1a1108;
+      color: #e8dcc8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.25rem;
+      color: #f5e6c8;
+    }
+
+    .subtitle {
+      color: #a08b6e;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .back-link {
+      color: #c8943e;
+      text-decoration: none;
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #e8a84c; }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 860px;
+    }
+
+    @media (max-width: 680px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Panels ── */
+    .panel {
+      background: #2a1e10;
+      border: 1px solid #3d2e18;
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .panel-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #a08b6e;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .panel-title .icon { font-size: 1rem; }
+
+    /* ── Base Coffee Selection ── */
+    .coffee-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .coffee-option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background: #1a1108;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .coffee-option:hover {
+      background: #221709;
+      border-color: #4a3620;
+    }
+
+    .coffee-option.selected {
+      border-color: #c8943e;
+      background: #2e200e;
+    }
+
+    .coffee-option input { display: none; }
+
+    .coffee-icon { font-size: 1.5rem; }
+
+    .coffee-info { flex: 1; }
+
+    .coffee-name {
+      font-weight: 600;
+      color: #f5e6c8;
+      font-size: 0.95rem;
+    }
+
+    .coffee-desc {
+      font-size: 0.78rem;
+      color: #8a7558;
+      margin-top: 2px;
+    }
+
+    .coffee-price {
+      font-weight: 700;
+      color: #c8943e;
+      font-size: 0.95rem;
+    }
+
+    /* ── Decorator Toggles ── */
+    .decorator-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .decorator-option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      background: #1a1108;
+      transition: all 0.2s;
+    }
+
+    .decorator-option:hover { background: #221709; }
+
+    .decorator-option.active {
+      background: #2e200e;
+      box-shadow: inset 0 0 0 1px #4a3620;
+    }
+
+    .decorator-icon { font-size: 1.2rem; }
+
+    .decorator-info { flex: 1; }
+
+    .decorator-name {
+      font-weight: 600;
+      color: #f5e6c8;
+      font-size: 0.9rem;
+    }
+
+    .decorator-desc {
+      font-size: 0.72rem;
+      color: #8a7558;
+      margin-top: 1px;
+    }
+
+    .decorator-price {
+      font-weight: 600;
+      color: #a08b6e;
+      font-size: 0.85rem;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    /* Toggle switch */
+    .toggle {
+      position: relative;
+      width: 38px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle .slider {
+      position: absolute;
+      inset: 0;
+      background: #4a3620;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle .slider::before {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 3px;
+      top: 3px;
+      background: #8a7558;
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .toggle input:checked + .slider { background: #c8943e; }
+    .toggle input:checked + .slider::before { transform: translateX(18px); background: #fff; }
+
+    /* ── Order Summary ── */
+    .order-panel {
+      grid-column: 1 / -1;
+    }
+
+    .order-visual {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      padding: 1.25rem;
+      background: #1a1108;
+      border-radius: 12px;
+      min-height: 80px;
+    }
+
+    .cup-display {
+      font-size: 3.5rem;
+      line-height: 1;
+    }
+
+    .order-description {
+      flex: 1;
+    }
+
+    .order-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #f5e6c8;
+      line-height: 1.3;
+    }
+
+    .order-breakdown {
+      font-size: 0.8rem;
+      color: #8a7558;
+      margin-top: 4px;
+    }
+
+    .order-total {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #c8943e;
+      text-align: right;
+      min-width: 90px;
+    }
+
+    /* ── Itemized list ── */
+    .line-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .line-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid #2e200e;
+    }
+
+    .line-item:last-child { border-bottom: none; }
+
+    .line-item .label { color: #a08b6e; }
+    .line-item .amount { color: #e8dcc8; font-weight: 600; }
+
+    .line-item.total-row {
+      border-top: 2px solid #3d2e18;
+      border-bottom: none;
+      padding-top: 0.6rem;
+      margin-top: 0.25rem;
+    }
+
+    .line-item.total-row .label { color: #f5e6c8; font-weight: 700; }
+    .line-item.total-row .amount { color: #c8943e; font-weight: 800; font-size: 1.05rem; }
+
+    /* ── Pattern Info ── */
+    .pattern-panel {
+      grid-column: 1 / -1;
+    }
+
+    .code-block {
+      background: #12120a;
+      border: 1px solid #2e200e;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      color: #b8a88a;
+      white-space: pre;
+    }
+
+    .code-block .kw { color: #c8943e; }
+    .code-block .cls { color: #e8a84c; }
+    .code-block .str { color: #8bba7a; }
+    .code-block .cmt { color: #5a5040; font-style: italic; }
+    .code-block .fn { color: #7ab8d4; }
+    .code-block .num { color: #d4a07a; }
+
+    /* ── Event Log ── */
+    .log-section {
+      grid-column: 1 / -1;
+    }
+
+    .log {
+      background: #1a1108;
+      border: 1px solid #2e200e;
+      border-radius: 10px;
+      padding: 1rem;
+      max-height: 180px;
+      overflow-y: auto;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
+
+    .log-entry { color: #8a7558; }
+    .log-entry .time { color: #5a5040; }
+    .log-entry .action { color: #c8943e; }
+    .log-entry .detail { color: #a08b6e; }
+  </style>
+</head>
+<body>
+
+  <a class="back-link" href="index.html">&larr; Back to all demos</a>
+  <h1>Coffee Shop</h1>
+  <p class="subtitle">Decorator Design Pattern Demo</p>
+
+  <div class="app-container">
+
+    <!-- Base Coffee Selection -->
+    <div class="panel">
+      <div class="panel-title"><span class="icon">&#9749;</span> Choose Your Base Coffee</div>
+      <div class="coffee-options" id="coffeeOptions"></div>
+    </div>
+
+    <!-- Decorator Toggles -->
+    <div class="panel">
+      <div class="panel-title"><span class="icon">&#10024;</span> Add Toppings &amp; Extras</div>
+      <div class="decorator-options" id="decoratorOptions"></div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="panel order-panel">
+      <div class="panel-title"><span class="icon">&#128203;</span> Your Order</div>
+      <div class="order-visual">
+        <div class="cup-display">&#9749;</div>
+        <div class="order-description">
+          <div class="order-name" id="orderName">Espresso</div>
+          <div class="order-breakdown" id="orderBreakdown">Classic base coffee</div>
+        </div>
+        <div class="order-total" id="orderTotal">$2.00</div>
+      </div>
+      <div class="line-items" id="lineItems"></div>
+    </div>
+
+    <!-- Pattern Explanation -->
+    <div class="panel pattern-panel">
+      <div class="panel-title"><span class="icon">&#128187;</span> Decorator Pattern — How It Works</div>
+      <div class="code-block" id="codeBlock"></div>
+    </div>
+
+    <!-- Event Log -->
+    <div class="panel log-section">
+      <div class="panel-title"><span class="icon">&#128220;</span> Event Log</div>
+      <div class="log" id="log"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ============================================================
+    //  DECORATOR DESIGN PATTERN — Coffee Shop Implementation
+    // ============================================================
+
+    // ── Component Interface ──
+    // Both concrete components and decorators share this interface.
+
+    class Beverage {
+      getDescription() {
+        throw new Error("getDescription() must be implemented");
+      }
+      getCost() {
+        throw new Error("getCost() must be implemented");
+      }
+    }
+
+    // ── Concrete Components (Base Coffees) ──
+
+    class Espresso extends Beverage {
+      getDescription() { return "Espresso"; }
+      getCost()        { return 2.00; }
+    }
+
+    class Americano extends Beverage {
+      getDescription() { return "Americano"; }
+      getCost()        { return 2.50; }
+    }
+
+    class Cappuccino extends Beverage {
+      getDescription() { return "Cappuccino"; }
+      getCost()        { return 3.50; }
+    }
+
+    class Latte extends Beverage {
+      getDescription() { return "Latte"; }
+      getCost()        { return 3.75; }
+    }
+
+    class ColdBrew extends Beverage {
+      getDescription() { return "Cold Brew"; }
+      getCost()        { return 3.25; }
+    }
+
+    // ── Base Decorator ──
+    // Wraps a Beverage and delegates to it, adding its own behavior.
+
+    class CondimentDecorator extends Beverage {
+      constructor(beverage) {
+        super();
+        this._beverage = beverage;
+      }
+      getDescription() {
+        return this._beverage.getDescription();
+      }
+      getCost() {
+        return this._beverage.getCost();
+      }
+    }
+
+    // ── Concrete Decorators ──
+
+    class MilkDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Milk"; }
+      getCost()        { return this._beverage.getCost() + 0.50; }
+    }
+
+    class WhipCreamDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Whip Cream"; }
+      getCost()        { return this._beverage.getCost() + 0.70; }
+    }
+
+    class SugarDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Sugar"; }
+      getCost()        { return this._beverage.getCost() + 0.25; }
+    }
+
+    class CaramelDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Caramel"; }
+      getCost()        { return this._beverage.getCost() + 0.75; }
+    }
+
+    class VanillaDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Vanilla"; }
+      getCost()        { return this._beverage.getCost() + 0.60; }
+    }
+
+    class ChocolateDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Chocolate"; }
+      getCost()        { return this._beverage.getCost() + 0.80; }
+    }
+
+    class CinnamonDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Cinnamon"; }
+      getCost()        { return this._beverage.getCost() + 0.35; }
+    }
+
+    class OatMilkDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Oat Milk"; }
+      getCost()        { return this._beverage.getCost() + 0.65; }
+    }
+
+    // ============================================================
+    //  APP DATA
+    // ============================================================
+
+    const COFFEES = [
+      { id: "espresso",   name: "Espresso",   desc: "Rich, bold single shot",        price: 2.00, cls: Espresso,   icon: "\u2615" },
+      { id: "americano",  name: "Americano",  desc: "Espresso with hot water",        price: 2.50, cls: Americano,  icon: "\u2615" },
+      { id: "cappuccino", name: "Cappuccino", desc: "Espresso, steamed milk & foam",  price: 3.50, cls: Cappuccino, icon: "\u2615" },
+      { id: "latte",      name: "Latte",      desc: "Espresso with lots of milk",     price: 3.75, cls: Latte,      icon: "\u2615" },
+      { id: "coldbrew",   name: "Cold Brew",  desc: "Slow-steeped, served cold",      price: 3.25, cls: ColdBrew,   icon: "\u2615" },
+    ];
+
+    const DECORATORS = [
+      { id: "milk",      name: "Milk",        desc: "Whole milk splash",      price: 0.50, cls: MilkDecorator,      icon: "\uD83E\uDD5B" },
+      { id: "oatmilk",   name: "Oat Milk",    desc: "Dairy-free alternative", price: 0.65, cls: OatMilkDecorator,   icon: "\uD83C\uDF3E" },
+      { id: "whipcream", name: "Whip Cream",  desc: "Fluffy whipped cream",   price: 0.70, cls: WhipCreamDecorator, icon: "\u2601\uFE0F" },
+      { id: "sugar",     name: "Sugar",       desc: "Classic sweetener",      price: 0.25, cls: SugarDecorator,     icon: "\uD83E\uDDC2" },
+      { id: "caramel",   name: "Caramel",     desc: "Rich caramel drizzle",   price: 0.75, cls: CaramelDecorator,   icon: "\uD83C\uDF6F" },
+      { id: "vanilla",   name: "Vanilla",     desc: "Smooth vanilla syrup",   price: 0.60, cls: VanillaDecorator,   icon: "\uD83C\uDF3C" },
+      { id: "chocolate", name: "Chocolate",   desc: "Mocha chocolate sauce",  price: 0.80, cls: ChocolateDecorator, icon: "\uD83C\uDF6B" },
+      { id: "cinnamon",  name: "Cinnamon",    desc: "Warm cinnamon dusting",  price: 0.35, cls: CinnamonDecorator,  icon: "\uD83C\uDF42" },
+    ];
+
+    // ============================================================
+    //  STATE
+    // ============================================================
+
+    let selectedCoffeeId = "espresso";
+    let activeDecorators = new Set();
+
+    // ============================================================
+    //  RENDER UI
+    // ============================================================
+
+    function renderCoffeeOptions() {
+      const container = document.getElementById("coffeeOptions");
+      container.innerHTML = "";
+
+      for (const coffee of COFFEES) {
+        const isSelected = coffee.id === selectedCoffeeId;
+        const div = document.createElement("div");
+        div.className = "coffee-option" + (isSelected ? " selected" : "");
+        div.innerHTML = `
+          <span class="coffee-icon">${coffee.icon}</span>
+          <div class="coffee-info">
+            <div class="coffee-name">${coffee.name}</div>
+            <div class="coffee-desc">${coffee.desc}</div>
+          </div>
+          <span class="coffee-price">$${coffee.price.toFixed(2)}</span>
+        `;
+        div.addEventListener("click", () => {
+          selectedCoffeeId = coffee.id;
+          logEvent("base changed", `new ${coffee.cls.name}()`);
+          renderCoffeeOptions();
+          updateOrder();
+        });
+        container.appendChild(div);
+      }
+    }
+
+    function renderDecoratorOptions() {
+      const container = document.getElementById("decoratorOptions");
+      container.innerHTML = "";
+
+      for (const dec of DECORATORS) {
+        const isActive = activeDecorators.has(dec.id);
+        const div = document.createElement("div");
+        div.className = "decorator-option" + (isActive ? " active" : "");
+        div.innerHTML = `
+          <span class="decorator-icon">${dec.icon}</span>
+          <div class="decorator-info">
+            <div class="decorator-name">${dec.name}</div>
+            <div class="decorator-desc">${dec.desc}</div>
+          </div>
+          <span class="decorator-price">+$${dec.price.toFixed(2)}</span>
+          <label class="toggle">
+            <input type="checkbox" ${isActive ? "checked" : ""} />
+            <span class="slider"></span>
+          </label>
+        `;
+        const checkbox = div.querySelector("input");
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            activeDecorators.add(dec.id);
+            logEvent("decorator added", `new ${dec.cls.name}(beverage)`);
+          } else {
+            activeDecorators.delete(dec.id);
+            logEvent("decorator removed", `unwrapped ${dec.cls.name}`);
+          }
+          renderDecoratorOptions();
+          updateOrder();
+        });
+        // Let clicking the row (excluding toggle) also toggle
+        div.addEventListener("click", (e) => {
+          if (e.target.closest(".toggle")) return;
+          checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event("change"));
+        });
+        container.appendChild(div);
+      }
+    }
+
+    // ============================================================
+    //  BUILD DECORATED BEVERAGE & UPDATE ORDER
+    // ============================================================
+
+    function buildBeverage() {
+      const coffeeData = COFFEES.find(c => c.id === selectedCoffeeId);
+      let beverage = new coffeeData.cls();
+
+      for (const dec of DECORATORS) {
+        if (activeDecorators.has(dec.id)) {
+          beverage = new dec.cls(beverage);
+        }
+      }
+
+      return beverage;
+    }
+
+    function updateOrder() {
+      const beverage = buildBeverage();
+      const description = beverage.getDescription();
+      const total = beverage.getCost();
+      const coffeeData = COFFEES.find(c => c.id === selectedCoffeeId);
+
+      // Order header
+      document.getElementById("orderName").textContent = description;
+      document.getElementById("orderTotal").textContent = `$${total.toFixed(2)}`;
+
+      const parts = [];
+      if (activeDecorators.size === 0) {
+        parts.push("Classic base coffee");
+      } else {
+        parts.push(`${coffeeData.name} + ${activeDecorators.size} add-on${activeDecorators.size > 1 ? "s" : ""}`);
+      }
+      document.getElementById("orderBreakdown").textContent = parts.join("");
+
+      // Line items
+      const lineItemsEl = document.getElementById("lineItems");
+      lineItemsEl.innerHTML = "";
+
+      addLineItem(lineItemsEl, coffeeData.name + " (base)", coffeeData.price);
+
+      for (const dec of DECORATORS) {
+        if (activeDecorators.has(dec.id)) {
+          addLineItem(lineItemsEl, "+ " + dec.name, dec.price);
+        }
+      }
+
+      // Total
+      const totalRow = document.createElement("div");
+      totalRow.className = "line-item total-row";
+      totalRow.innerHTML = `<span class="label">Total</span><span class="amount">$${total.toFixed(2)}</span>`;
+      lineItemsEl.appendChild(totalRow);
+
+      // Update code block
+      updateCodeBlock();
+    }
+
+    function addLineItem(container, label, amount) {
+      const div = document.createElement("div");
+      div.className = "line-item";
+      div.innerHTML = `<span class="label">${label}</span><span class="amount">$${amount.toFixed(2)}</span>`;
+      container.appendChild(div);
+    }
+
+    // ============================================================
+    //  LIVE CODE BLOCK
+    // ============================================================
+
+    function updateCodeBlock() {
+      const coffeeData = COFFEES.find(c => c.id === selectedCoffeeId);
+      const activeDecs = DECORATORS.filter(d => activeDecorators.has(d.id));
+
+      let lines = [];
+      lines.push(`<span class="cmt">// 1. Create the base component</span>`);
+      lines.push(`<span class="kw">let</span> beverage = <span class="kw">new</span> <span class="cls">${coffeeData.cls.name}</span>();`);
+
+      if (activeDecs.length > 0) {
+        lines.push(``);
+        lines.push(`<span class="cmt">// 2. Wrap with decorators — each adds behavior &amp; cost</span>`);
+        for (const dec of activeDecs) {
+          lines.push(`beverage = <span class="kw">new</span> <span class="cls">${dec.cls.name}</span>(beverage);`);
+        }
+      }
+
+      lines.push(``);
+      lines.push(`<span class="cmt">// 3. Call methods — decorators delegate down the chain</span>`);
+      lines.push(`beverage.<span class="fn">getDescription</span>(); <span class="cmt">// "${buildBeverage().getDescription()}"</span>`);
+      lines.push(`beverage.<span class="fn">getCost</span>();        <span class="cmt">// ${buildBeverage().getCost().toFixed(2)}</span>`);
+
+      document.getElementById("codeBlock").innerHTML = lines.join("\n");
+    }
+
+    // ============================================================
+    //  EVENT LOG
+    // ============================================================
+
+    function logEvent(action, detail) {
+      const logEl = document.getElementById("log");
+      const now = new Date().toLocaleTimeString();
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      entry.innerHTML = `<span class="time">[${now}]</span> <span class="action">${action}</span> <span class="detail">${detail}</span>`;
+      logEl.prepend(entry);
+    }
+
+    // ============================================================
+    //  INIT
+    // ============================================================
+
+    renderCoffeeOptions();
+    renderDecoratorOptions();
+    updateOrder();
+    logEvent("initialized", "Coffee Shop ready — select a base and add decorators!");
+  </script>
+</body>
+</html>
