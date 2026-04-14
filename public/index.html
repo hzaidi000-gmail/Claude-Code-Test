@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Observer Pattern — Weather Station</title>
+  <title>Coffee Shop — Decorator Design Pattern</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
+      background: #1a1108;
+      color: #e8dcc8;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -19,120 +19,159 @@
     }
 
     h1 {
-      font-size: 1.6rem;
+      font-size: 2rem;
       margin-bottom: 0.25rem;
-      color: #f8fafc;
+      color: #f5e6c8;
     }
 
     .subtitle {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
-    }
-
-    /* ── Controls ── */
-    .controls {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 1.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: flex-end;
-      width: 100%;
-      max-width: 720px;
-      margin-bottom: 2rem;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-      flex: 1;
-      min-width: 130px;
-    }
-
-    .input-group label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-    }
-
-    .input-group input {
-      padding: 0.5rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #0f172a;
-      color: #e2e8f0;
-      font-size: 1rem;
-      width: 100%;
-    }
-
-    .input-group input:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
-    }
-
-    button.update-btn {
-      padding: 0.55rem 1.5rem;
-      border-radius: 8px;
-      border: none;
-      background: #3b82f6;
-      color: #fff;
+      color: #a08b6e;
       font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
-      white-space: nowrap;
+      margin-bottom: 2rem;
     }
 
-    button.update-btn:hover { background: #2563eb; }
-    button.update-btn:active { background: #1d4ed8; }
-
-    /* ── Display Grid ── */
-    .displays {
+    .app-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.25rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
       width: 100%;
-      max-width: 720px;
+      max-width: 860px;
     }
 
-    .display-card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 1.25rem;
-      transition: opacity 0.3s, border-color 0.3s;
+    @media (max-width: 680px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
     }
 
-    .display-card.unsubscribed {
-      opacity: 0.4;
-      border-color: #1e293b;
+    /* ── Panels ── */
+    .panel {
+      background: #2a1e10;
+      border: 1px solid #3d2e18;
+      border-radius: 14px;
+      padding: 1.5rem;
     }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    .card-title {
+    .panel-title {
       font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
+      letter-spacing: 0.06em;
+      color: #a08b6e;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .panel-title .icon { font-size: 1rem; }
+
+    /* ── Base Coffee Selection ── */
+    .coffee-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .coffee-option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background: #1a1108;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .coffee-option:hover {
+      background: #221709;
+      border-color: #4a3620;
+    }
+
+    .coffee-option.selected {
+      border-color: #c8943e;
+      background: #2e200e;
+    }
+
+    .coffee-option input { display: none; }
+
+    .coffee-icon { font-size: 1.5rem; }
+
+    .coffee-info { flex: 1; }
+
+    .coffee-name {
+      font-weight: 600;
+      color: #f5e6c8;
+      font-size: 0.95rem;
+    }
+
+    .coffee-desc {
+      font-size: 0.78rem;
+      color: #8a7558;
+      margin-top: 2px;
+    }
+
+    .coffee-price {
+      font-weight: 700;
+      color: #c8943e;
+      font-size: 0.95rem;
+    }
+
+    /* ── Decorator Toggles ── */
+    .decorator-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .decorator-option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      background: #1a1108;
+      transition: all 0.2s;
+    }
+
+    .decorator-option:hover { background: #221709; }
+
+    .decorator-option.active {
+      background: #2e200e;
+      box-shadow: inset 0 0 0 1px #4a3620;
+    }
+
+    .decorator-icon { font-size: 1.2rem; }
+
+    .decorator-info { flex: 1; }
+
+    .decorator-name {
+      font-weight: 600;
+      color: #f5e6c8;
+      font-size: 0.9rem;
+    }
+
+    .decorator-desc {
+      font-size: 0.72rem;
+      color: #8a7558;
+      margin-top: 1px;
+    }
+
+    .decorator-price {
+      font-weight: 600;
+      color: #a08b6e;
+      font-size: 0.85rem;
+      min-width: 50px;
+      text-align: right;
     }
 
     /* Toggle switch */
     .toggle {
       position: relative;
-      width: 40px;
-      height: 22px;
+      width: 38px;
+      height: 20px;
+      flex-shrink: 0;
     }
 
     .toggle input { opacity: 0; width: 0; height: 0; }
@@ -140,8 +179,8 @@
     .toggle .slider {
       position: absolute;
       inset: 0;
-      background: #475569;
-      border-radius: 22px;
+      background: #4a3620;
+      border-radius: 20px;
       cursor: pointer;
       transition: background 0.2s;
     }
@@ -149,307 +188,506 @@
     .toggle .slider::before {
       content: "";
       position: absolute;
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       left: 3px;
       top: 3px;
-      background: #fff;
+      background: #8a7558;
       border-radius: 50%;
-      transition: transform 0.2s;
+      transition: transform 0.2s, background 0.2s;
     }
 
-    .toggle input:checked + .slider { background: #3b82f6; }
-    .toggle input:checked + .slider::before { transform: translateX(18px); }
+    .toggle input:checked + .slider { background: #c8943e; }
+    .toggle input:checked + .slider::before { transform: translateX(18px); background: #fff; }
 
-    .card-value {
-      font-size: 1.8rem;
+    /* ── Order Summary ── */
+    .order-panel {
+      grid-column: 1 / -1;
+    }
+
+    .order-visual {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      padding: 1.25rem;
+      background: #1a1108;
+      border-radius: 12px;
+      min-height: 80px;
+    }
+
+    .cup-display {
+      font-size: 3.5rem;
+      line-height: 1;
+    }
+
+    .order-description {
+      flex: 1;
+    }
+
+    .order-name {
+      font-size: 1.2rem;
       font-weight: 700;
-      color: #f8fafc;
-      line-height: 1.2;
+      color: #f5e6c8;
+      line-height: 1.3;
     }
 
-    .card-detail {
+    .order-breakdown {
+      font-size: 0.8rem;
+      color: #8a7558;
+      margin-top: 4px;
+    }
+
+    .order-total {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #c8943e;
+      text-align: right;
+      min-width: 90px;
+    }
+
+    /* ── Itemized list ── */
+    .line-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .line-item {
+      display: flex;
+      justify-content: space-between;
       font-size: 0.85rem;
-      color: #94a3b8;
-      margin-top: 0.5rem;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid #2e200e;
     }
 
-    .card-icon {
-      font-size: 1.4rem;
-      margin-bottom: 0.5rem;
+    .line-item:last-child { border-bottom: none; }
+
+    .line-item .label { color: #a08b6e; }
+    .line-item .amount { color: #e8dcc8; font-weight: 600; }
+
+    .line-item.total-row {
+      border-top: 2px solid #3d2e18;
+      border-bottom: none;
+      padding-top: 0.6rem;
+      margin-top: 0.25rem;
     }
 
-    .badge {
-      display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin-top: 0.5rem;
+    .line-item.total-row .label { color: #f5e6c8; font-weight: 700; }
+    .line-item.total-row .amount { color: #c8943e; font-weight: 800; font-size: 1.05rem; }
+
+    /* ── Pattern Info ── */
+    .pattern-panel {
+      grid-column: 1 / -1;
     }
 
-    .badge.improving { background: #166534; color: #bbf7d0; }
-    .badge.worsening { background: #7f1d1d; color: #fecaca; }
-    .badge.same { background: #1e3a5f; color: #bfdbfe; }
-    .badge.waiting { background: #44403c; color: #d6d3d1; }
+    .code-block {
+      background: #12120a;
+      border: 1px solid #2e200e;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      color: #b8a88a;
+      white-space: pre;
+    }
+
+    .code-block .kw { color: #c8943e; }
+    .code-block .cls { color: #e8a84c; }
+    .code-block .str { color: #8bba7a; }
+    .code-block .cmt { color: #5a5040; font-style: italic; }
+    .code-block .fn { color: #7ab8d4; }
+    .code-block .num { color: #d4a07a; }
 
     /* ── Event Log ── */
     .log-section {
-      width: 100%;
-      max-width: 720px;
-      margin-top: 2rem;
-    }
-
-    .log-title {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-      margin-bottom: 0.5rem;
+      grid-column: 1 / -1;
     }
 
     .log {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
+      background: #1a1108;
+      border: 1px solid #2e200e;
+      border-radius: 10px;
       padding: 1rem;
       max-height: 180px;
       overflow-y: auto;
       font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       line-height: 1.6;
     }
 
-    .log-entry { color: #94a3b8; }
-    .log-entry .time { color: #64748b; }
-    .log-entry .action { color: #38bdf8; }
-    .log-entry .target { color: #a78bfa; }
+    .log-entry { color: #8a7558; }
+    .log-entry .time { color: #5a5040; }
+    .log-entry .action { color: #c8943e; }
+    .log-entry .detail { color: #a08b6e; }
   </style>
 </head>
 <body>
-  <h1>Weather Station</h1>
-  <p class="subtitle">Observer Design Pattern Demo</p>
 
-  <!-- Controls -->
-  <div class="controls">
-    <div class="input-group">
-      <label for="temp">Temperature (°C)</label>
-      <input type="number" id="temp" value="26.5" step="0.1" />
-    </div>
-    <div class="input-group">
-      <label for="humidity">Humidity (%)</label>
-      <input type="number" id="humidity" value="65" step="1" />
-    </div>
-    <div class="input-group">
-      <label for="pressure">Pressure (hPa)</label>
-      <input type="number" id="pressure" value="1013.1" step="0.1" />
-    </div>
-    <button class="update-btn" id="updateBtn">Update</button>
-  </div>
+  <h1>Coffee Shop</h1>
+  <p class="subtitle">Decorator Design Pattern Demo</p>
 
-  <!-- Observer Display Cards -->
-  <div class="displays">
-    <div class="display-card" id="currentCard">
-      <div class="card-header">
-        <span class="card-title">Current Conditions</span>
-        <label class="toggle">
-          <input type="checkbox" checked id="toggleCurrent" />
-          <span class="slider"></span>
-        </label>
+  <div class="app-container">
+
+    <!-- Base Coffee Selection -->
+    <div class="panel">
+      <div class="panel-title"><span class="icon">&#9749;</span> Choose Your Base Coffee</div>
+      <div class="coffee-options" id="coffeeOptions"></div>
+    </div>
+
+    <!-- Decorator Toggles -->
+    <div class="panel">
+      <div class="panel-title"><span class="icon">&#10024;</span> Add Toppings &amp; Extras</div>
+      <div class="decorator-options" id="decoratorOptions"></div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="panel order-panel">
+      <div class="panel-title"><span class="icon">&#128203;</span> Your Order</div>
+      <div class="order-visual">
+        <div class="cup-display">&#9749;</div>
+        <div class="order-description">
+          <div class="order-name" id="orderName">Espresso</div>
+          <div class="order-breakdown" id="orderBreakdown">Classic base coffee</div>
+        </div>
+        <div class="order-total" id="orderTotal">$2.00</div>
       </div>
-      <div class="card-icon">🌡️</div>
-      <div class="card-value" id="currentTemp">--</div>
-      <div class="card-detail" id="currentHumidity">Humidity: --</div>
+      <div class="line-items" id="lineItems"></div>
     </div>
 
-    <div class="display-card" id="statsCard">
-      <div class="card-header">
-        <span class="card-title">Statistics</span>
-        <label class="toggle">
-          <input type="checkbox" checked id="toggleStats" />
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="card-icon">📊</div>
-      <div class="card-value" id="statsAvg">--</div>
-      <div class="card-detail" id="statsMinMax">Min/Max: --</div>
+    <!-- Pattern Explanation -->
+    <div class="panel pattern-panel">
+      <div class="panel-title"><span class="icon">&#128187;</span> Decorator Pattern — How It Works</div>
+      <div class="code-block" id="codeBlock"></div>
     </div>
 
-    <div class="display-card" id="forecastCard">
-      <div class="card-header">
-        <span class="card-title">Forecast</span>
-        <label class="toggle">
-          <input type="checkbox" checked id="toggleForecast" />
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="card-icon">🔮</div>
-      <div class="card-value" id="forecastText">--</div>
-      <div id="forecastBadgeContainer"></div>
+    <!-- Event Log -->
+    <div class="panel log-section">
+      <div class="panel-title"><span class="icon">&#128220;</span> Event Log</div>
+      <div class="log" id="log"></div>
     </div>
-  </div>
 
-  <!-- Event Log -->
-  <div class="log-section">
-    <div class="log-title">Event Log</div>
-    <div class="log" id="log"></div>
   </div>
 
   <script>
-    // ─── Observer Pattern Implementation ───
+    // ============================================================
+    //  DECORATOR DESIGN PATTERN — Coffee Shop Implementation
+    // ============================================================
 
-    class WeatherStation {
-      constructor() {
-        this.observers = new Set();
-        this.data = { temperature: 0, humidity: 0, pressure: 0 };
+    // ── Component Interface ──
+    // Both concrete components and decorators share this interface.
+
+    class Beverage {
+      getDescription() {
+        throw new Error("getDescription() must be implemented");
       }
-
-      subscribe(observer) {
-        this.observers.add(observer);
+      getCost() {
+        throw new Error("getCost() must be implemented");
       }
+    }
 
-      unsubscribe(observer) {
-        this.observers.delete(observer);
+    // ── Concrete Components (Base Coffees) ──
+
+    class Espresso extends Beverage {
+      getDescription() { return "Espresso"; }
+      getCost()        { return 2.00; }
+    }
+
+    class Americano extends Beverage {
+      getDescription() { return "Americano"; }
+      getCost()        { return 2.50; }
+    }
+
+    class Cappuccino extends Beverage {
+      getDescription() { return "Cappuccino"; }
+      getCost()        { return 3.50; }
+    }
+
+    class Latte extends Beverage {
+      getDescription() { return "Latte"; }
+      getCost()        { return 3.75; }
+    }
+
+    class ColdBrew extends Beverage {
+      getDescription() { return "Cold Brew"; }
+      getCost()        { return 3.25; }
+    }
+
+    // ── Base Decorator ──
+    // Wraps a Beverage and delegates to it, adding its own behavior.
+
+    class CondimentDecorator extends Beverage {
+      constructor(beverage) {
+        super();
+        this._beverage = beverage;
       }
+      getDescription() {
+        return this._beverage.getDescription();
+      }
+      getCost() {
+        return this._beverage.getCost();
+      }
+    }
 
-      notify() {
-        for (const observer of this.observers) {
-          observer.update({ ...this.data });
+    // ── Concrete Decorators ──
+
+    class MilkDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Milk"; }
+      getCost()        { return this._beverage.getCost() + 0.50; }
+    }
+
+    class WhipCreamDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Whip Cream"; }
+      getCost()        { return this._beverage.getCost() + 0.70; }
+    }
+
+    class SugarDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Sugar"; }
+      getCost()        { return this._beverage.getCost() + 0.25; }
+    }
+
+    class CaramelDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Caramel"; }
+      getCost()        { return this._beverage.getCost() + 0.75; }
+    }
+
+    class VanillaDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Vanilla"; }
+      getCost()        { return this._beverage.getCost() + 0.60; }
+    }
+
+    class ChocolateDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Chocolate"; }
+      getCost()        { return this._beverage.getCost() + 0.80; }
+    }
+
+    class CinnamonDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Cinnamon"; }
+      getCost()        { return this._beverage.getCost() + 0.35; }
+    }
+
+    class OatMilkDecorator extends CondimentDecorator {
+      getDescription() { return this._beverage.getDescription() + ", Oat Milk"; }
+      getCost()        { return this._beverage.getCost() + 0.65; }
+    }
+
+    // ============================================================
+    //  APP DATA
+    // ============================================================
+
+    const COFFEES = [
+      { id: "espresso",   name: "Espresso",   desc: "Rich, bold single shot",        price: 2.00, cls: Espresso,   icon: "\u2615" },
+      { id: "americano",  name: "Americano",  desc: "Espresso with hot water",        price: 2.50, cls: Americano,  icon: "\u2615" },
+      { id: "cappuccino", name: "Cappuccino", desc: "Espresso, steamed milk & foam",  price: 3.50, cls: Cappuccino, icon: "\u2615" },
+      { id: "latte",      name: "Latte",      desc: "Espresso with lots of milk",     price: 3.75, cls: Latte,      icon: "\u2615" },
+      { id: "coldbrew",   name: "Cold Brew",  desc: "Slow-steeped, served cold",      price: 3.25, cls: ColdBrew,   icon: "\u2615" },
+    ];
+
+    const DECORATORS = [
+      { id: "milk",      name: "Milk",        desc: "Whole milk splash",      price: 0.50, cls: MilkDecorator,      icon: "\uD83E\uDD5B" },
+      { id: "oatmilk",   name: "Oat Milk",    desc: "Dairy-free alternative", price: 0.65, cls: OatMilkDecorator,   icon: "\uD83C\uDF3E" },
+      { id: "whipcream", name: "Whip Cream",  desc: "Fluffy whipped cream",   price: 0.70, cls: WhipCreamDecorator, icon: "\u2601\uFE0F" },
+      { id: "sugar",     name: "Sugar",       desc: "Classic sweetener",      price: 0.25, cls: SugarDecorator,     icon: "\uD83E\uDDC2" },
+      { id: "caramel",   name: "Caramel",     desc: "Rich caramel drizzle",   price: 0.75, cls: CaramelDecorator,   icon: "\uD83C\uDF6F" },
+      { id: "vanilla",   name: "Vanilla",     desc: "Smooth vanilla syrup",   price: 0.60, cls: VanillaDecorator,   icon: "\uD83C\uDF3C" },
+      { id: "chocolate", name: "Chocolate",   desc: "Mocha chocolate sauce",  price: 0.80, cls: ChocolateDecorator, icon: "\uD83C\uDF6B" },
+      { id: "cinnamon",  name: "Cinnamon",    desc: "Warm cinnamon dusting",  price: 0.35, cls: CinnamonDecorator,  icon: "\uD83C\uDF42" },
+    ];
+
+    // ============================================================
+    //  STATE
+    // ============================================================
+
+    let selectedCoffeeId = "espresso";
+    let activeDecorators = new Set();
+
+    // ============================================================
+    //  RENDER UI
+    // ============================================================
+
+    function renderCoffeeOptions() {
+      const container = document.getElementById("coffeeOptions");
+      container.innerHTML = "";
+
+      for (const coffee of COFFEES) {
+        const isSelected = coffee.id === selectedCoffeeId;
+        const div = document.createElement("div");
+        div.className = "coffee-option" + (isSelected ? " selected" : "");
+        div.innerHTML = `
+          <span class="coffee-icon">${coffee.icon}</span>
+          <div class="coffee-info">
+            <div class="coffee-name">${coffee.name}</div>
+            <div class="coffee-desc">${coffee.desc}</div>
+          </div>
+          <span class="coffee-price">$${coffee.price.toFixed(2)}</span>
+        `;
+        div.addEventListener("click", () => {
+          selectedCoffeeId = coffee.id;
+          logEvent("base changed", `new ${coffee.cls.name}()`);
+          renderCoffeeOptions();
+          updateOrder();
+        });
+        container.appendChild(div);
+      }
+    }
+
+    function renderDecoratorOptions() {
+      const container = document.getElementById("decoratorOptions");
+      container.innerHTML = "";
+
+      for (const dec of DECORATORS) {
+        const isActive = activeDecorators.has(dec.id);
+        const div = document.createElement("div");
+        div.className = "decorator-option" + (isActive ? " active" : "");
+        div.innerHTML = `
+          <span class="decorator-icon">${dec.icon}</span>
+          <div class="decorator-info">
+            <div class="decorator-name">${dec.name}</div>
+            <div class="decorator-desc">${dec.desc}</div>
+          </div>
+          <span class="decorator-price">+$${dec.price.toFixed(2)}</span>
+          <label class="toggle">
+            <input type="checkbox" ${isActive ? "checked" : ""} />
+            <span class="slider"></span>
+          </label>
+        `;
+        const checkbox = div.querySelector("input");
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            activeDecorators.add(dec.id);
+            logEvent("decorator added", `new ${dec.cls.name}(beverage)`);
+          } else {
+            activeDecorators.delete(dec.id);
+            logEvent("decorator removed", `unwrapped ${dec.cls.name}`);
+          }
+          renderDecoratorOptions();
+          updateOrder();
+        });
+        // Let clicking the row (excluding toggle) also toggle
+        div.addEventListener("click", (e) => {
+          if (e.target.closest(".toggle")) return;
+          checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event("change"));
+        });
+        container.appendChild(div);
+      }
+    }
+
+    // ============================================================
+    //  BUILD DECORATED BEVERAGE & UPDATE ORDER
+    // ============================================================
+
+    function buildBeverage() {
+      const coffeeData = COFFEES.find(c => c.id === selectedCoffeeId);
+      let beverage = new coffeeData.cls();
+
+      for (const dec of DECORATORS) {
+        if (activeDecorators.has(dec.id)) {
+          beverage = new dec.cls(beverage);
         }
       }
 
-      setMeasurements(temperature, humidity, pressure) {
-        this.data = { temperature, humidity, pressure };
-        this.notify();
-      }
+      return beverage;
     }
 
-    class CurrentConditionsDisplay {
-      constructor() { this.data = null; }
+    function updateOrder() {
+      const beverage = buildBeverage();
+      const description = beverage.getDescription();
+      const total = beverage.getCost();
+      const coffeeData = COFFEES.find(c => c.id === selectedCoffeeId);
 
-      update(data) {
-        this.data = data;
-        this.render();
+      // Order header
+      document.getElementById("orderName").textContent = description;
+      document.getElementById("orderTotal").textContent = `$${total.toFixed(2)}`;
+
+      const parts = [];
+      if (activeDecorators.size === 0) {
+        parts.push("Classic base coffee");
+      } else {
+        parts.push(`${coffeeData.name} + ${activeDecorators.size} add-on${activeDecorators.size > 1 ? "s" : ""}`);
       }
+      document.getElementById("orderBreakdown").textContent = parts.join("");
 
-      render() {
-        if (!this.data) return;
-        document.getElementById("currentTemp").textContent = `${this.data.temperature}°C`;
-        document.getElementById("currentHumidity").textContent = `Humidity: ${this.data.humidity}%`;
-      }
-    }
+      // Line items
+      const lineItemsEl = document.getElementById("lineItems");
+      lineItemsEl.innerHTML = "";
 
-    class StatisticsDisplay {
-      constructor() { this.temperatures = []; }
+      addLineItem(lineItemsEl, coffeeData.name + " (base)", coffeeData.price);
 
-      update(data) {
-        this.temperatures.push(data.temperature);
-        this.render();
-      }
-
-      render() {
-        if (this.temperatures.length === 0) return;
-        const min = Math.min(...this.temperatures);
-        const max = Math.max(...this.temperatures);
-        const avg = this.temperatures.reduce((s, t) => s + t, 0) / this.temperatures.length;
-        document.getElementById("statsAvg").textContent = `${avg.toFixed(1)}°C avg`;
-        document.getElementById("statsMinMax").textContent = `Min: ${min}°C / Max: ${max}°C`;
-      }
-    }
-
-    class ForecastDisplay {
-      constructor() { this.previousPressure = null; this.currentPressure = null; }
-
-      update(data) {
-        this.previousPressure = this.currentPressure;
-        this.currentPressure = data.pressure;
-        this.render();
-      }
-
-      render() {
-        const el = document.getElementById("forecastText");
-        const badgeEl = document.getElementById("forecastBadgeContainer");
-
-        if (this.currentPressure === null) return;
-
-        if (this.previousPressure === null) {
-          el.textContent = "Awaiting data…";
-          badgeEl.innerHTML = '<span class="badge waiting">Waiting</span>';
-          return;
-        }
-
-        if (this.currentPressure > this.previousPressure) {
-          el.textContent = "Improving!";
-          badgeEl.innerHTML = '<span class="badge improving">Pressure Rising</span>';
-        } else if (this.currentPressure < this.previousPressure) {
-          el.textContent = "Rainy weather";
-          badgeEl.innerHTML = '<span class="badge worsening">Pressure Dropping</span>';
-        } else {
-          el.textContent = "More of same";
-          badgeEl.innerHTML = '<span class="badge same">Steady</span>';
+      for (const dec of DECORATORS) {
+        if (activeDecorators.has(dec.id)) {
+          addLineItem(lineItemsEl, "+ " + dec.name, dec.price);
         }
       }
+
+      // Total
+      const totalRow = document.createElement("div");
+      totalRow.className = "line-item total-row";
+      totalRow.innerHTML = `<span class="label">Total</span><span class="amount">$${total.toFixed(2)}</span>`;
+      lineItemsEl.appendChild(totalRow);
+
+      // Update code block
+      updateCodeBlock();
     }
 
-    // ─── Setup ───
+    function addLineItem(container, label, amount) {
+      const div = document.createElement("div");
+      div.className = "line-item";
+      div.innerHTML = `<span class="label">${label}</span><span class="amount">$${amount.toFixed(2)}</span>`;
+      container.appendChild(div);
+    }
 
-    const station = new WeatherStation();
+    // ============================================================
+    //  LIVE CODE BLOCK
+    // ============================================================
 
-    const currentDisplay = new CurrentConditionsDisplay();
-    const statsDisplay = new StatisticsDisplay();
-    const forecastDisplay = new ForecastDisplay();
+    function updateCodeBlock() {
+      const coffeeData = COFFEES.find(c => c.id === selectedCoffeeId);
+      const activeDecs = DECORATORS.filter(d => activeDecorators.has(d.id));
 
-    station.subscribe(currentDisplay);
-    station.subscribe(statsDisplay);
-    station.subscribe(forecastDisplay);
+      let lines = [];
+      lines.push(`<span class="cmt">// 1. Create the base component</span>`);
+      lines.push(`<span class="kw">let</span> beverage = <span class="kw">new</span> <span class="cls">${coffeeData.cls.name}</span>();`);
 
-    const logEl = document.getElementById("log");
+      if (activeDecs.length > 0) {
+        lines.push(``);
+        lines.push(`<span class="cmt">// 2. Wrap with decorators — each adds behavior &amp; cost</span>`);
+        for (const dec of activeDecs) {
+          lines.push(`beverage = <span class="kw">new</span> <span class="cls">${dec.cls.name}</span>(beverage);`);
+        }
+      }
 
-    function logEvent(action, target) {
+      lines.push(``);
+      lines.push(`<span class="cmt">// 3. Call methods — decorators delegate down the chain</span>`);
+      lines.push(`beverage.<span class="fn">getDescription</span>(); <span class="cmt">// "${buildBeverage().getDescription()}"</span>`);
+      lines.push(`beverage.<span class="fn">getCost</span>();        <span class="cmt">// ${buildBeverage().getCost().toFixed(2)}</span>`);
+
+      document.getElementById("codeBlock").innerHTML = lines.join("\n");
+    }
+
+    // ============================================================
+    //  EVENT LOG
+    // ============================================================
+
+    function logEvent(action, detail) {
+      const logEl = document.getElementById("log");
       const now = new Date().toLocaleTimeString();
       const entry = document.createElement("div");
       entry.className = "log-entry";
-      entry.innerHTML = `<span class="time">[${now}]</span> <span class="action">${action}</span> <span class="target">${target}</span>`;
+      entry.innerHTML = `<span class="time">[${now}]</span> <span class="action">${action}</span> <span class="detail">${detail}</span>`;
       logEl.prepend(entry);
     }
 
-    // ─── Update Button ───
+    // ============================================================
+    //  INIT
+    // ============================================================
 
-    document.getElementById("updateBtn").addEventListener("click", () => {
-      const t = parseFloat(document.getElementById("temp").value);
-      const h = parseFloat(document.getElementById("humidity").value);
-      const p = parseFloat(document.getElementById("pressure").value);
-
-      if (isNaN(t) || isNaN(h) || isNaN(p)) return;
-
-      station.setMeasurements(t, h, p);
-      logEvent("notify()", `${t}°C, ${h}%, ${p} hPa → ${station.observers.size} observer(s)`);
-    });
-
-    // ─── Toggle Subscriptions ───
-
-    function wireToggle(checkboxId, cardId, display, name) {
-      const checkbox = document.getElementById(checkboxId);
-      const card = document.getElementById(cardId);
-
-      checkbox.addEventListener("change", () => {
-        if (checkbox.checked) {
-          station.subscribe(display);
-          card.classList.remove("unsubscribed");
-          logEvent("subscribe()", name);
-        } else {
-          station.unsubscribe(display);
-          card.classList.add("unsubscribed");
-          logEvent("unsubscribe()", name);
-        }
-      });
-    }
-
-    wireToggle("toggleCurrent", "currentCard", currentDisplay, "CurrentConditionsDisplay");
-    wireToggle("toggleStats", "statsCard", statsDisplay, "StatisticsDisplay");
-    wireToggle("toggleForecast", "forecastCard", forecastDisplay, "ForecastDisplay");
-
-    logEvent("ready", "Weather Station initialized with 3 observers");
+    renderCoffeeOptions();
+    renderDecoratorOptions();
+    updateOrder();
+    logEvent("initialized", "Coffee Shop ready — select a base and add decorators!");
   </script>
 </body>
 </html>
